@@ -1,0 +1,29 @@
+{% extends 'base.html'  %}
+
+{% block content %}
+
+<h1 class="display-1">All Feedback</h1>
+
+
+{% for feedback in all_feedback %}
+<h3>{{feedback.title}}</h3>
+<h4><a href="/users/{{feedback.username}}">{{feedback.username}}</a></h4>
+<div class="row">
+    <p>{{feedback.content}}</p>
+    <form>
+        {{form.hidden_tag()}}
+        <button class="btn btn-primary"
+            formmethod="GET"
+            formaction="/feedback/{{ feedback.id }}/update">
+            Edit
+        </button>
+        <button class="btn btn-danger"
+                formmethod="POST"
+                formaction="/feedback/{{feedback.id}}/delete">
+            Delete
+        </button>
+      </form>
+</div>
+{% endfor %}
+
+{% endblock %}
