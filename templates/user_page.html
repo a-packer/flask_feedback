@@ -4,6 +4,14 @@
 
 <h1 class="display-1">{{user.username}}</h1>
 <h3>Name: {{user.first_name}} {{user.last_name}}</h3>
+<form>
+    {{form.hidden_tag()}}
+    <button class="btn btn-danger"
+            formmethod="POST"
+            formaction="/users/{{user.username}}/delete">
+        Delete User
+    </button>
+</form>
 <h3>Email: {{user.email}}</h3>
 <a class="btn my-3" style="color: navy; border: 1px solid black; border-radius: 0.8;" href="/users/{{user.username}}/feedback/new">Add Feedback</a>
 

@@ -23,6 +23,11 @@ def root():
 
 @app.route('/feedback')
 def all_feedback():
+
+    if "username" not in session:
+        flash("You need to login!", "danger")
+        return redirect('/login')
+
     all_feedback = Feedback.query.all()
     form = DeleteForm()
     return render_template('all_feedback.html', all_feedback=all_feedback, form=form)
@@ -66,7 +71,7 @@ def login_user():
 
         user = User.authenticate(username, password)
         if user:
-            flash(f"Welcome Back, {user.username}!", "primary")
+            flash(f"Welcome Back, {user.username}!", "sucess")
             session['username'] = user.username
             return redirect(f'/users/{username}')
         else:
@@ -74,6 +79,24 @@ def login_user():
 
     return render_template('login.html', form=form)
 
+@app.route('/users/<username>/delete', methods=['POST'])
+def delete_user(username):
+    """Delete User."""
+
+    user = User.query.get_or_404(username)
+    if "username" not in session or username != session['username']:
+        flash('Not Authorized', "danger")
+        return redirect(f'users/{current_user}')
+
+    form = DeleteForm()
+
+    if form.validate_on_submit():
+        db.session.delete(user)
+        db.session.commit()
+
+    session.pop('username')
+    flash('Your User Is Deleted along with all Feedback. Thanks for playing!', "info")
+    return redirect("/feedback")
 
 @app.route('/users/<username>', methods=['GET'])
 def open_user_page(username):
@@ -98,8 +121,6 @@ def logout_user():
     flash("Goodbye. Come back again soon!", "danger")
     return redirect('/')
 
-# POST /users/<username>/delete
-# Remove the user from the database and make sure to also delete all of their feedback. Clear any user information in the session and redirect to /. Make sure that only the user who is logged in can successfully delete their account
 
 
 @app.route('/feedback/<int:feedback_id>/update', methods=["GET", "POST"])
@@ -133,8 +154,12 @@ def delete_feedback(feedback_id):
     """Delete feedback."""
 
     feedback = Feedback.query.get_or_404(feedback_id)
-    if "username" not in session or feedback.username != session['username']:
-        flash('Not Authorized', "danger")
+    if "username" not in session:
+        flash('Not Authorized. Need to Login', "danger")
+        return redirect('/login')
+
+    if feedback.username != session['username']:
+        flash("Not Authorized To Delete Another User's Feedback", "danger")
         current_user = session['username']
         return redirect(f'users/{current_user}')
 
